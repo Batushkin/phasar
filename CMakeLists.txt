@@ -150,7 +150,7 @@ option(PHASAR_BUILD_UNITTESTS "Build all tests (default is ON)" ON)
 
 option(PHASAR_BUILD_OPENSSL_TS_UNITTESTS "Build OPENSSL typestate tests (require OpenSSL, default is OFF)" OFF)
 
-option(PHASAR_USE_Z3 "Build the phasar_llvm_pathsensitivity library with Z3 support for constraint solving (default is OFF)" OFF)
+option(PHASAR_USE_Z3 "Build the phasar_llvm_pathsensitivity library with Z3 support for constraint solving (default is OFF)" ON)
 
 option(PHASAR_BUILD_IR "Build IR test code (default is ON)" ON)
 
@@ -267,7 +267,7 @@ set(BUILD_TESTS OFF CACHE BOOL "Build json-schema-validator-tests")
 if (PHASAR_IN_TREE)
   set_property(GLOBAL APPEND PROPERTY LLVM_EXPORTS nlohmann_json_schema_validator)
 
-  set (PHASAR_USE_Z3 OFF)
+  set (PHASAR_USE_Z3 ON)
 endif()
 
 # Json Schema Validator

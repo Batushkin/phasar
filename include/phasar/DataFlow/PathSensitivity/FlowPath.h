@@ -38,6 +38,9 @@ template <typename N> struct FlowPath {
   [[nodiscard]] size_t size() const noexcept { return Path.size(); }
   [[nodiscard]] bool empty() const noexcept { return Path.empty(); }
 
+  [[nodiscard]] z3::model getModel() const noexcept { return Model; }
+  [[nodiscard]] z3::expr getConstraint() const noexcept { return Constraint; }
+
   [[nodiscard]] decltype(auto) operator[](size_t Idx) const {
     return Path[Idx];
   }
