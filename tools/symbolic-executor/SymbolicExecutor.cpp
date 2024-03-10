@@ -28,6 +28,9 @@
 #include "phasar/Utils/GraphTraits.h"
 #include "phasar/Utils/Logger.h"
 #include "phasar/Utils/Utilities.h"
+#include "phasar/DataFlow/IfdsIde/SolverResults.h"
+
+#include "include/FTAResultsParser.h"
 
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/IR/Constants.h"
@@ -37,6 +40,7 @@
 #include "llvm/Support/raw_ostream.h"
 
 #include "z3++.h"
+#include "yaml-cpp/yaml.h"
 
 #include <cassert>
 #include <fstream>
@@ -44,6 +48,7 @@
 #include <new>
 #include <string>
 #include <system_error>
+#include <vector>
 
 namespace {
 
@@ -74,6 +79,7 @@ public:
     //IRDB->print();
     //ICFG.print();
     //Solver.dumpResults();
+    //Solver.emitTextReport();
 
     /*
     // Print the exploded Graph as DOT
@@ -83,16 +89,29 @@ public:
     Solver.getExplicitESG().printAsDot(ROS);
     */
 
-    auto *Main = IRDB->getFunctionDefinition("main");
-    assert(Main);
-    auto *LastInst = &Main->back().back();
-    llvm::outs() << "Target instruction: " << psr::llvmIRToString(LastInst)
-                 << '\n';
-
     psr::Z3BasedPathSensitivityManager<psr::IDEExtendedTaintAnalysisDomain> PSM(
         &Solver.getExplicitESG(),
         psr::Z3BasedPathSensitivityConfig().withDAGDepthThreshold(MaxDAGDepth),
         &LPC);
+
+    /*llvm::Module mod = IRDB->getModule();
+    auto functionsList = mod.getFunctionList();
+      for (llvm::Function func : functionsList) {
+      assert(func);
+
+    }*/
+
+    // get llvm function main
+    auto *Main = IRDB->getFunctionDefinition("main");
+    assert(Main);
+    // get the last instruction of the last basic block in the main function
+    auto *LastInst = &Main->back().back();
+    
+    //z3::expr constraint = LPC.getConstraintFromEdge(LastInst->getPrevNonDebugInstruction(), LastInst).value();
+    //std::cout << "Edge Constraint Test: " << constraint;
+
+    llvm::outs() << "Target instruction: " << psr::llvmIRToString(LastInst)
+                 << '\n';
 
     auto result = PSM.pathsTo(LastInst, Analysis.getZeroValue());
     return result;
@@ -105,6 +124,16 @@ public:
 int main(int argc, char **argv) {
   SymbolicExecutor executor;
   std::string filePath = argv[1];
+  std::string fileFTA = argv[2];
+
+  FTAResultsParser parser;
+  std::vector<struct FTAResultsParser::taintedInst> taintedInsts = parser.parseFTAResults(fileFTA);
+
+  for(int i = 0; i < taintedInsts.size(); i++) {
+    struct FTAResultsParser::taintedInst currInst = taintedInsts[i];
+    std::cout << currInst.inst << currInst.loc << currInst.func << "\n";
+  }
+  
   std::vector<psr::FlowPath<const llvm::Instruction *>> result = executor.doAnalysis(filePath);
 
   // print the paths vector
@@ -119,7 +148,7 @@ int main(int argc, char **argv) {
     }
 
     std::cout << "PC: " << Constraint;
-    std::cout << "Eval Res: " << Model.eval(Constraint, true) << "\n";
+    //std::cout << "Eval Res: " << Model.eval(Constraint, true) << "\n";
 
   }
   
