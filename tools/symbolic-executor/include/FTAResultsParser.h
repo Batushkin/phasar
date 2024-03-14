@@ -16,6 +16,9 @@ class FTAResultsParser {
     FTAResultsParser();
 
     std::vector<struct taintedInst> parseFTAResults(std::string FTAresults);
+  
+  private:
+    bool isBranchingInst(std::string inst);
 };
 
 #endif

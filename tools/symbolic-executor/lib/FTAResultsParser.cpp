@@ -40,19 +40,42 @@ FTAResultsParser::parseFTAResults(std::string FTAresults){
 
         // YAML sequence contains YAML map nodes
         for (YAML::const_iterator ity = featureInsts.begin(); ity != featureInsts.end(); ++ity) {
-          struct taintedInst currInst;
-          currInst.func = currFunc["demangled-name"].as<std::string>();
-
           YAML::Node currInstNode = ity->as<YAML::Node>();
-          currInst.inst = currInstNode["inst"].as<std::string>();
-          currInst.loc = currInstNode["location"].as<std::string>();
-          currInst.taints = currInstNode["taints"].as<std::vector<std::string>>();
+          std::string inst = currInstNode["inst"].as<std::string>();
 
-          taintedInsts.push_back(currInst);
+          if (isBranchingInst(inst)) {
+            struct taintedInst currInst;
+            currInst.func = currFunc["demangled-name"].as<std::string>();
+
+            currInst.inst = inst;
+            currInst.loc = currInstNode["location"].as<std::string>();
+            currInst.taints = currInstNode["taints"].as<std::vector<std::string>>();
+
+            taintedInsts.push_back(currInst);
+          }
         }
       }
     }
   }
 
   return taintedInsts;
+}
+
+/*
+A function that checks whether the LLVM instruction is
+one of the branching instructions.
+
+resume, catchswitch and catchret are left out because
+they handle exceptions and we are not interested in them
+*/
+bool FTAResultsParser::isBranchingInst(std::string inst) {
+  if ((inst.rfind("br", 0) == 0) ||
+                (inst.rfind("switch", 0) == 0) ||
+                (inst.rfind("indirectbr", 0) == 0) ||
+                (inst.rfind("invoke", 0) == 0) ||
+                (inst.rfind("call", 0) == 0)) {
+    return true;
+  }
+
+  return false;
 }
