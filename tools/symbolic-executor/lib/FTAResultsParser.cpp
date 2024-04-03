@@ -43,7 +43,7 @@ FTAResultsParser::parseFTAResults(std::string FTAresults){
           YAML::Node currInstNode = ity->as<YAML::Node>();
           std::string inst = currInstNode["inst"].as<std::string>();
 
-          if (isBranchingInst(inst)) {
+          if (isBranchingInst(inst) && isLoopCondition(inst)) {
             struct taintedInst currInst;
             currInst.func = currFunc["demangled-name"].as<std::string>();
 
@@ -74,6 +74,22 @@ bool FTAResultsParser::isBranchingInst(std::string inst) {
                 (inst.rfind("indirectbr", 0) == 0) ||
                 (inst.rfind("invoke", 0) == 0) ||
                 (inst.rfind("call", 0) == 0)) {
+    return true;
+  }
+
+  return false;
+}
+
+/*
+A function that checks whether the LLVM instruction is
+a br instruction to a loop BB
+
+we check for: for, while, do-while
+*/
+bool FTAResultsParser::isLoopCondition(std::string inst) {
+  if (inst.find("for.body") != std::string::npos ||
+      inst.find("while.body") != std::string::npos ||
+      inst.find("do.body") != std::string::npos) {
     return true;
   }
 

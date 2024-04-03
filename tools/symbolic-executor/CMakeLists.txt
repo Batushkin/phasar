@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(SymbolicExecutor)
+project(spm)
 
 # include yaml-cpp
 include(FetchContent)
@@ -19,7 +19,7 @@ endif()
 
 #find_package(phasar REQUIRED)
 
-#add_executable(se SymbolicExecutor.cpp)
+#add_executable(se spm.cpp)
 
 include_directories(
   ${PROJECT_SOURCE_DIR}
@@ -27,7 +27,7 @@ include_directories(
 
 # Build the Symbolic Executor
 file(GLOB CPP_SOURCE
-    "SymbolicExecutor.cpp"
+    "spm.cpp"
     "lib/*.cpp"    
 )
 

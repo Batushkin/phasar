@@ -19,6 +19,7 @@ class FTAResultsParser {
   
   private:
     bool isBranchingInst(std::string inst);
+    bool isLoopCondition(std::string inst);
 };
 
 #endif
