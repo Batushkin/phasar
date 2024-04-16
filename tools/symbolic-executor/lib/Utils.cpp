@@ -68,3 +68,16 @@ bool Utils::isTaint(std::string co, std::vector<std::string> taints) {
 
   return false;
 }
+
+void Utils::printSymbolTable(llvm::Module &M){
+  llvm::outs() << "Globbal Variables: \n";
+  for (auto &G : M.globals()) {
+    llvm::outs() << G.getName() << "\n";
+  }
+
+  llvm::outs() << "\nFunctions: \n";
+  for (auto &F : M.functions()) {
+    llvm::outs() << F.getName() << "\n";
+  }
+  llvm::outs().flush();
+}

@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "yaml-cpp/yaml.h"
+
 class FTAResultsParser {
   public:
     struct taintedInst {

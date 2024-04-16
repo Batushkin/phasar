@@ -33,6 +33,7 @@ FTAResultsParser::parseFTAResults(std::string FTAresults){
 
     for (YAML::const_iterator it = resultMap.begin(); it != resultMap.end(); ++it) {
       YAML::Node currFunc = it->second.as<YAML::Node>();
+      std::string currFuncName = it->first.as<std::string>();
 
       if (currFunc["feature-related-insts"]) {
         // should be a YAML sequence
@@ -45,7 +46,7 @@ FTAResultsParser::parseFTAResults(std::string FTAresults){
 
           if (isBranchingInst(inst) && isLoopCondition(inst)) {
             struct taintedInst currInst;
-            currInst.func = currFunc["demangled-name"].as<std::string>();
+            currInst.func = currFuncName;
 
             currInst.inst = inst;
             currInst.loc = currInstNode["location"].as<std::string>();

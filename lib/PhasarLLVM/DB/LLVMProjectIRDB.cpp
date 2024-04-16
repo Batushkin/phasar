@@ -181,6 +181,8 @@ internalGetFunctionDefinition(const llvm::Module &M,
   if (F && !F->isDeclaration()) {
     return F;
   }
+  llvm::outs() << "No function for the function name found." << "\n";
+  llvm::outs().flush();
   return nullptr;
 }
 

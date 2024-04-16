@@ -91,7 +91,10 @@ void SymbolicExecutor::doAnalysis(const std::string &llvmFilePath,
     llvm::outs().flush();
 
     // get the llvm::Function
-    llvm::Function *func = IRDB->getFunctionDefinition(currInst.func);
+    llvm::outs() << currInst.func << "\n";
+    llvm::outs().flush();
+    //Utils.printSymbolTable(*IRDB->getModule());
+    llvm::Function *func = IRDB->getFunction(currInst.func);
     //llvm::outs() << func;
     assert(func);
     // get the llvm::Instruction

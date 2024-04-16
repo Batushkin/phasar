@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include "llvm/IR/Instructions.h"
+#include "llvm/IR/Module.h"
 
 class Utils
 {
@@ -26,6 +27,9 @@ public:
 
   // returns true if the co is contained in the taints vector
   bool isTaint(std::string co, std::vector<std::string> taints);
+
+  // prints the symbol table of an llvm::Module
+  void printSymbolTable(llvm::Module &M);
 };
 
 #endif
