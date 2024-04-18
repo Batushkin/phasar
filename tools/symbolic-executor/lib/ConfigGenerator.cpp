@@ -10,7 +10,13 @@ ConfigGenerator::ConfigGenerator(
     configOptions = cos;
   }
 
-void ConfigGenerator::generateValueRanges(z3::expr pc, std::vector<std::string> taints) {
+void ConfigGenerator::generateValueRanges(
+  z3::expr pc,
+  std::vector<std::string> taints,
+  int& numValueRanges,
+  std::vector<std::vector<ConfigGenerator::ValueRange>>& knownPathValRanges) {
+  
+  std::vector<ConfigGenerator::ValueRange> newPathValRanges;
   z3::context& ctx = pc.ctx();
   //z3::solver s(ctx);
   //s.add(pc);
@@ -34,13 +40,28 @@ void ConfigGenerator::generateValueRanges(z3::expr pc, std::vector<std::string> 
       if (!checkForConstEq(constraints, {co})) {
         std::string max = getMaxAssignment(co, pc);
         std::string min = getMinAssignment(co, pc);
-        llvm::outs() << co << " = [" << fixNeg(min) << ", " << fixNeg(max) << "]\n";
-        llvm::outs().flush();
+
+        ConfigGenerator::ValueRange currValRange;
+        currValRange.co = co;
+        currValRange.max = fixNeg(max);
+        currValRange.min = fixNeg(min);
+        newPathValRanges.push_back(currValRange);
       }
+    } 
+  }
+
+  // Don't output the value ranges if the same value ranges tuple already exists for another path
+  for (std::vector<ConfigGenerator::ValueRange> pathValRanges : knownPathValRanges) {
+    if (pathValRangesAreEqual(newPathValRanges, pathValRanges)) {
+      return;
     }
   }
+
+  // Add the new path value ranges to the known ones
+  knownPathValRanges.push_back(newPathValRanges);
   
   // code for generating assignments for all relevant taints
+  // it is now very old. I changed how this function works a lot
   /*for (int i = 0; i < n; ++i) {
     llvm::outs() << "Configuration " << i+1 << ":\n";
 
@@ -83,6 +104,46 @@ void ConfigGenerator::generateValueRanges(z3::expr pc, std::vector<std::string> 
       llvm::outs().flush();
     }
   }*/
+}
+
+bool ConfigGenerator::addValRangeToKnown(
+  std::vector<std::vector<ConfigGenerator::ValueRange>>& knownPathValRanges,
+  std::vector<ConfigGenerator::ValueRange> newPathValRanges) {
+  
+  for (std::vector<ConfigGenerator::ValueRange> pathValRanges : knownPathValRanges) {
+    if (pathValRangesAreEqual(pathValRanges, newPathValRanges)) {
+      return false;
+    }
+  }
+
+  knownPathValRanges.push_back(newPathValRanges);
+  return true;
+}
+
+bool ConfigGenerator::pathValRangesAreEqual(
+  std::vector<ConfigGenerator::ValueRange> pathValRanges1,
+  std::vector<ConfigGenerator::ValueRange> pathValRanges2) {
+  
+  if (pathValRanges1.size() != pathValRanges2.size()) {
+    return false;
+  }
+
+  // Use unordered map to count occurances of valueRange in pathValRanges1
+  std::unordered_map<ConfigGenerator::ValueRange, int> countMap;
+  for (ConfigGenerator::ValueRange valRange : pathValRanges1) {
+    countMap[valRange]++;
+  }
+
+  for (ConfigGenerator::ValueRange valRange : pathValRanges2) {
+    auto it = countMap.find(valRange);
+    if (it == countMap.end() || it->second == 0) {
+      return false;
+    }
+
+    it->second--;
+  }
+
+  return true;
 }
 
 std::string ConfigGenerator::getMaxAssignment(std::string co, z3::expr pc) {

@@ -118,8 +118,11 @@ void SymbolicExecutor::doAnalysis(const std::string &llvmFilePath,
     //llvm::outs().flush();
     psr::FlowPathSequence<const llvm::Instruction*> pathsToCurrInst = PSM.pathsTo(I, Analysis.getZeroValue());
     pathsToCurrInst = filterOutNonConditionalPaths(pathsToCurrInst);
-
+    
     if (!pathsToCurrInst.empty()) {
+      int numValueRanges = 0;
+      std::vector<std::vector<ConfigGenerator::ValueRange>> knownPathValRanges;
+
       for (psr::FlowPath<const llvm::Instruction *> path : pathsToCurrInst) {
         //printPath(path);
         z3::model model = path.getModel();
@@ -131,12 +134,32 @@ void SymbolicExecutor::doAnalysis(const std::string &llvmFilePath,
 
         // Generate value ranges only if the condition variable has multiple assignments
         if (!CG.checkForConstEq(constraints, condVars)) {
-          // print the path constraint
-          llvm::outs() << "PC: " << pc.to_string() << "\n";
           // print the value ranges for the relevant taints
-          CG.generateValueRanges(pc, taints);
-        }  
+          CG.generateValueRanges(pc, taints, numValueRanges, knownPathValRanges);
+        } 
       }
+
+      // print the path constraint
+      // llvm::outs() << "PC: " << pc.to_string() << "\n";
+
+      // output the unique value ranges
+      for (unsigned long i = 0; i < knownPathValRanges.size(); i++) {
+        std::vector<ConfigGenerator::ValueRange> pathValRanges = knownPathValRanges[i];
+        llvm::outs() << "Unique Value Ranges Set " << std::to_string(i + 1) << "\n";
+
+        for (ConfigGenerator::ValueRange valRange : pathValRanges) {
+          llvm::outs() << valRange.co << " in [" << valRange.min <<
+          ", " << valRange.max << "]\n";
+
+          numValueRanges++;
+        }
+
+        llvm::outs().flush();
+      }
+      
+      // for evaluation
+      llvm::outs() << "Number of Paths: " << std::to_string(pathsToCurrInst.size()) << "\n";
+      llvm::outs() << "Number of ValueRanges: " << std::to_string(numValueRanges) << "\n";
       llvm::outs().flush();
     } else {
       llvm::outs() << "No paths found by the path tracing!\n";

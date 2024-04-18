@@ -12,6 +12,17 @@
 class ConfigGenerator
 {
 public:
+  struct ValueRange
+  { 
+    std::string co;
+    std::string max;
+    std::string min;
+
+    bool operator==(const ValueRange& other) const {
+      return co == other.co && max == other.max && min == other.min;
+    }
+  };
+  
   ConfigGenerator(
     std::vector<FTAResultsParser::taintedInst> taintedInsts,
     std::vector<std::string> configOptions);
@@ -20,7 +31,11 @@ public:
     Generates value ranges for the relevant taints of for a given
     path constraint and prints them.
   */
-  void generateValueRanges(z3::expr pc, std::vector<std::string> taints);
+  void generateValueRanges(
+    z3::expr pc,
+    std::vector<std::string> taints,
+    int& numValueRanges,
+    std::vector<std::vector<ConfigGenerator::ValueRange>>& knownPathValRanges);
 
   /*
    Returns the condition variables of a branching instruction in
@@ -51,6 +66,14 @@ public:
   // Returns the minimum assignment for a configuration option
   std::string getMinAssignment(std::string co, z3::expr pc);
 
+  /*
+    If all value ranges for path 1 are found for path 2, return true.
+    Otherwise, return false
+  */
+  bool pathValRangesAreEqual(
+    std::vector<ConfigGenerator::ValueRange> pathValRanges1,
+    std::vector<ConfigGenerator::ValueRange> pathValRanges2);
+
 private:
   int upperBound = 1000000;
   int lowerBound = -1000000;
@@ -65,6 +88,26 @@ private:
   // so later it can be used for the creation of a new constraint
   std::string fixNeg(std::string neg);
 
+  /*
+    Adds a new unknown value range to the known value ranges.
+    Returns true if a new unknown value range was added.
+    Returns false if the new value range is already known.
+  */
+  bool addValRangeToKnown(
+    std::vector<std::vector<ConfigGenerator::ValueRange>>& knownPathValRanges,
+    std::vector<ConfigGenerator::ValueRange> newPathValRanges);
+
 };
+
+namespace std {
+  template<>
+  struct hash<ConfigGenerator::ValueRange> {
+    size_t operator()(const ConfigGenerator::ValueRange& valRange) const {
+      return hash<string>()(valRange.co) ^ 
+             hash<string>()(valRange.min) ^
+             hash<string>()(valRange.max);
+    }
+  };
+} // end of namespace std
 
 #endif
