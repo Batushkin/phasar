@@ -120,9 +120,10 @@ void SymbolicExecutor::doAnalysis(const std::string &llvmFilePath,
     //llvm::outs().flush();
     psr::FlowPathSequence<const llvm::Instruction*> pathsToCurrInst = PSM.pathsTo(I, Analysis.getZeroValue());
     pathsToCurrInst = filterOutNonConditionalPaths(pathsToCurrInst);
-    numberOfPathsOveraflages = 0;
-      std::vector<std::vector<ConfigGenerator::ValueRange>> knownPathValRanges;
+    int numValueRanges = 0;
+    std::vector<std::vector<ConfigGenerator::ValueRange>> knownPathValRanges;
 
+    if (!pathsToCurrInst.empty()) {
       for (psr::FlowPath<const llvm::Instruction *> path : pathsToCurrInst) {
         //printPath(path);
         z3::model model = path.getModel();
