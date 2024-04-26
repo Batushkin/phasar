@@ -29,6 +29,8 @@ void ConfigGenerator::generateValueRanges(
   // for each configuration option
   for (std::string co : configOptions) {
     // check if it's a taint
+    // I think we can now just iterate over the taints.
+    // No longer need all config options as we don't output possible assignments for them anymore.
     if (u.isTaint(co, taints)) {
       // add upper and lower constraints
       z3::expr upper = ctx.int_const(co.c_str()) <= upperBound;
@@ -46,7 +48,7 @@ void ConfigGenerator::generateValueRanges(
         currValRange.max = fixNeg(max);
         currValRange.min = fixNeg(min);
         newPathValRanges.push_back(currValRange);
-      }
+      }  
     } 
   }
 
@@ -263,7 +265,7 @@ bool ConfigGenerator::checkForConstEq(std::vector<z3::expr> constraints,
                                       std::vector<std::string> condVars) {
   for (std::string condVar : condVars) {
     for (z3::expr constraint : constraints) {
-      if (constraint.is_eq()) {
+      if (constraint.is_eq()) { 
         z3::expr arg1 = constraint.arg(0);
         z3::expr arg2 = constraint.arg(1);
 

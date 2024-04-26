@@ -75,6 +75,8 @@ void SymbolicExecutor::doAnalysis(const std::string &llvmFilePath,
       &LPC);
 
   ConfigGenerator CG(taintedInsts, configOptions);
+  int valueRangesOverall = 0;
+  unsigned long numberOfPathsOverall = 0;
 
   // For each tainted instruction
   for (struct FTAResultsParser::taintedInst currInst : taintedInsts) {
@@ -118,9 +120,7 @@ void SymbolicExecutor::doAnalysis(const std::string &llvmFilePath,
     //llvm::outs().flush();
     psr::FlowPathSequence<const llvm::Instruction*> pathsToCurrInst = PSM.pathsTo(I, Analysis.getZeroValue());
     pathsToCurrInst = filterOutNonConditionalPaths(pathsToCurrInst);
-    
-    if (!pathsToCurrInst.empty()) {
-      int numValueRanges = 0;
+    numberOfPathsOveraflages = 0;
       std::vector<std::vector<ConfigGenerator::ValueRange>> knownPathValRanges;
 
       for (psr::FlowPath<const llvm::Instruction *> path : pathsToCurrInst) {
@@ -134,13 +134,12 @@ void SymbolicExecutor::doAnalysis(const std::string &llvmFilePath,
 
         // Generate value ranges only if the condition variable has multiple assignments
         if (!CG.checkForConstEq(constraints, condVars)) {
+           // print the path constraint
+           llvm::outs() << "PC: " << pc.to_string() << "\n";
           // print the value ranges for the relevant taints
           CG.generateValueRanges(pc, taints, numValueRanges, knownPathValRanges);
         } 
       }
-
-      // print the path constraint
-      // llvm::outs() << "PC: " << pc.to_string() << "\n";
 
       // output the unique value ranges
       for (unsigned long i = 0; i < knownPathValRanges.size(); i++) {
@@ -158,14 +157,19 @@ void SymbolicExecutor::doAnalysis(const std::string &llvmFilePath,
       }
       
       // for evaluation
-      llvm::outs() << "Number of Paths: " << std::to_string(pathsToCurrInst.size()) << "\n";
-      llvm::outs() << "Number of ValueRanges: " << std::to_string(numValueRanges) << "\n";
+      llvm::outs() << "Number of paths: " << std::to_string(pathsToCurrInst.size()) << "\n";
+      valueRangesOverall += numValueRanges;
+      llvm::outs() << "Number of unique value ranges: " << std::to_string(numValueRanges) << "\n\n";
       llvm::outs().flush();
     } else {
       llvm::outs() << "No paths found by the path tracing!\n";
       llvm::outs().flush();
     }    
   }
+
+  llvm::outs() << "Number of paths overall: " << std::to_string(numberOfPathsOverall) << "\n";
+  llvm::outs() << "Number of value ranges overall: " << std::to_string(valueRangesOverall) << "\n";
+  llvm::outs().flush();
 }
 
 void SymbolicExecutor::printPath(psr::FlowPath<const llvm::Instruction*> path) {
