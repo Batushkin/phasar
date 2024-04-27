@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "include/FTAResultsParser.h"
+#include "include/Utils.h"
 
 #include "llvm/IR/Instructions.h"
 
@@ -77,6 +78,7 @@ public:
 private:
   int upperBound = 1000000;
   int lowerBound = -1000000;
+  Utils utils;
 
   std::vector<std::string> configOptions;
   std::vector<FTAResultsParser::taintedInst> taintedInsts;

@@ -30,6 +30,9 @@ public:
 
   // prints the symbol table of an llvm::Module
   void printSymbolTable(llvm::Module &M);
+
+  // Helper function to remove .addr tag from a variable
+  void removeAddrTag(std::string& var);
 };
 
 #endif

@@ -93,8 +93,8 @@ void SymbolicExecutor::doAnalysis(const std::string &llvmFilePath,
     llvm::outs().flush();
 
     // get the llvm::Function
-    llvm::outs() << currInst.func << "\n";
-    llvm::outs().flush();
+    //llvm::outs() << currInst.func << "\n";
+    //llvm::outs().flush();
     //Utils.printSymbolTable(*IRDB->getModule());
     llvm::Function *func = IRDB->getFunction(currInst.func);
     //llvm::outs() << func;
@@ -135,8 +135,8 @@ void SymbolicExecutor::doAnalysis(const std::string &llvmFilePath,
 
         // Generate value ranges only if the condition variable has multiple assignments
         if (!CG.checkForConstEq(constraints, condVars)) {
-           // print the path constraint
-           llvm::outs() << "PC: " << pc.to_string() << "\n";
+          // print the path constraint
+          //llvm::outs() << "PC: " << pc.to_string() << "\n";
           // print the value ranges for the relevant taints
           CG.generateValueRanges(pc, taints, numValueRanges, knownPathValRanges);
         } 

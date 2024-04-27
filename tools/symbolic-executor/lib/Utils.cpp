@@ -1,5 +1,7 @@
 #include "include/Utils.h"
 
+#include <iostream>
+
 llvm::BasicBlock*
 Utils::getFirstDestinationBB(llvm::Instruction* inst) {
   if (inst->getOpcode() == llvm::Instruction::Br) {
@@ -80,4 +82,12 @@ void Utils::printSymbolTable(llvm::Module &M){
     llvm::outs() << F.getName() << "\n";
   }
   llvm::outs().flush();
+}
+
+void Utils::removeAddrTag(std::string& var) {
+  size_t delimiter = var.find('.');
+
+  if (delimiter != std::string::npos) {
+    var.erase(delimiter);
+  }
 }

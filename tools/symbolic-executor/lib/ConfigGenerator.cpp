@@ -1,5 +1,4 @@
 #include "include/ConfigGenerator.h"
-#include "include/Utils.h"
 
 #include <fstream>
 
@@ -24,14 +23,12 @@ void ConfigGenerator::generateValueRanges(
   std::vector<z3::expr> constraints;
   getAndOperands(pc, constraints);
 
-  Utils u;
-
   // for each configuration option
   for (std::string co : configOptions) {
     // check if it's a taint
     // I think we can now just iterate over the taints.
     // No longer need all config options as we don't output possible assignments for them anymore.
-    if (u.isTaint(co, taints)) {
+    if (utils.isTaint(co, taints)) {
       // add upper and lower constraints
       z3::expr upper = ctx.int_const(co.c_str()) <= upperBound;
       z3::expr lower = ctx.int_const(co.c_str()) >= lowerBound;
@@ -243,18 +240,20 @@ std::vector<std::string> ConfigGenerator::getConditionVars(llvm::BasicBlock* BB)
       if (llvm::LoadInst *loadInst1 = llvm::dyn_cast<llvm::LoadInst>(op1)) {
           llvm::Value *ptrOp1 = loadInst1->getPointerOperand();
           std::string name1 = ptrOp1->getName().str();
-          llvm::outs() << name1 << "\n";
+          utils.removeAddrTag(name1);
+          //llvm::outs() << name1 << "\n";
           res.push_back(name1);
       }
 
       if (llvm::LoadInst *loadInst2 = llvm::dyn_cast<llvm::LoadInst>(op2)) {
         llvm::Value *ptrOp2 = loadInst2->getPointerOperand();
         std::string name2 = ptrOp2->getName().str();
-        llvm::outs() << name2 << "\n";
+        utils.removeAddrTag(name2);
+        //llvm::outs() << name2 << "\n";
         res.push_back(name2);
       }
 
-      llvm::outs().flush();
+      //llvm::outs().flush();
     }
   }
 
