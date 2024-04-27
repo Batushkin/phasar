@@ -121,6 +121,7 @@ void SymbolicExecutor::doAnalysis(const std::string &llvmFilePath,
     psr::FlowPathSequence<const llvm::Instruction*> pathsToCurrInst = PSM.pathsTo(I, Analysis.getZeroValue());
     pathsToCurrInst = filterOutNonConditionalPaths(pathsToCurrInst);
     int numValueRanges = 0;
+    numberOfPathsOverall += pathsToCurrInst.size();
     std::vector<std::vector<ConfigGenerator::ValueRange>> knownPathValRanges;
 
     if (!pathsToCurrInst.empty()) {
