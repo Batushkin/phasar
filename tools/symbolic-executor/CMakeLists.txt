@@ -17,31 +17,27 @@ if(NOT yaml-cpp_POPULATED)
   add_subdirectory(${yaml-cpp_SOURCE_DIR} ${yaml-cpp_BINARY_DIR})
 endif()
 
-#find_package(phasar REQUIRED)
-
-#add_executable(se spm.cpp)
-
 include_directories(
   ${PROJECT_SOURCE_DIR}
 )
 
 # Build the Symbolic Executor
 file(GLOB CPP_SOURCE
-    "spm.cpp"
+    "spmvg.cpp"
     "lib/*.cpp"    
 )
 
 if(PHASAR_IN_TREE)
-  add_phasar_executable(se
+  add_phasar_executable(spmvg
     ${CPP_SOURCE}
   )
 else()
-  add_executable(se
+  add_executable(spmvg
     ${CPP_SOURCE}
   )
 endif()
 
-target_link_libraries(se
+target_link_libraries(spmvg
   LINK_PUBLIC
     phasar
     z3
@@ -61,7 +57,3 @@ target_link_libraries(se
     phasar_llvm_typehierarchy
     yaml-cpp::yaml-cpp
 )
-
-#install(TARGETS se
-#  RUNTIME DESTINATION bin
-#)
